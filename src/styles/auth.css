@@ -1,0 +1,11 @@
+.login-card{
+    padding:30px;
+    border-radius:12px;
+    width:400px;
+}
+
+.login-error{
+    color:#dc3545;
+    font-size:14px;
+    margin-top:5px;
+}
