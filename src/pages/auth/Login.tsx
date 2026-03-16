@@ -2,12 +2,25 @@ import { useState } from "react";
 import AuthLayout from "../../layouts/AuthLayout";
 import { loginService } from "../../api/services/authService";
 import "../../styles/auth.css";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function Login(){
 
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
   const [errors,setErrors] = useState<any>({});
+  const navigate = useNavigate();
+
+  useEffect(()=>{
+    if(Object.keys(errors).length > 0){
+      const timer = setTimeout(()=>{
+        setErrors({});
+      },4000);
+
+      return ()=>clearTimeout(timer);
+    }
+  },[errors]);
 
   const handleSubmit = async (e:any)=>{
 
@@ -21,9 +34,15 @@ export default function Login(){
       return;
     }
 
+    // save token
+    localStorage.setItem("token", result.data.token);
+
+    // redirect
+    navigate("/staff/dashboard");
+
     console.log(result.data);
 
-    alert("Login successful");
+    //alert("Login successful");
 
   };
 
