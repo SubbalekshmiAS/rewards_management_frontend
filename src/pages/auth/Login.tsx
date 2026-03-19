@@ -36,9 +36,18 @@ export default function Login(){
 
     // save token
     localStorage.setItem("token", result.data.token);
+    localStorage.setItem("user", JSON.stringify(result.data.user));
 
     // redirect
-    navigate("/staff/dashboard");
+   const user = result.data.user;
+
+    if (user.role === "staff") {
+      navigate("/staff/dashboard");
+    } else if (user.role === "admin") {
+      navigate("/admin/dashboard");
+    } else {
+      navigate("/customer/dashboard");
+    }
 
     console.log(result.data);
 

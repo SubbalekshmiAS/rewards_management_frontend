@@ -19,6 +19,7 @@ import AddRewardsContent from './AddRewardsContent';
 import ShiftActiveContent from './ShiftActiveContent';
 import RewardsRedemptionContent from './RewardsRedemptionContent';
 import NonLoyaltyContent from './NonLoyaltyContent';
+import { useNavigate } from "react-router-dom";
 
 type MenuKey =
   | 'dashboard'
@@ -55,10 +56,18 @@ const StaffDashboard: React.FC = () => {
       case 'shiftActive': return <ShiftActiveContent />;
       case 'rewardsRedemption': return <RewardsRedemptionContent />;
       case 'nonLoyalty': return <NonLoyaltyContent />;
-      case 'logout': return <div>Logging out...</div>;
+      //case 'logout': return <div>Logging out...</div>;
       default: return <div>Select a menu</div>;
     }
   };
+
+  const navigate = useNavigate();
+  
+  const handleLogout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
+  navigate("/login");
+};
 
   return (
     <div className="staff-dashboard d-flex">
@@ -68,7 +77,13 @@ const StaffDashboard: React.FC = () => {
           {menuItems.map((item) => (
             <li key={item.key} className="nav-item mb-2">
               <button
-                onClick={() => setActiveMenu(item.key)}
+               onClick={() => {
+                    if (item.key === "logout") {
+                      handleLogout();
+                    } else {
+                      setActiveMenu(item.key);
+                    }
+                  }}
                 className={`nav-btn d-flex align-items-center w-100 text-start ${
                   activeMenu === item.key ? 'active' : ''
                 }`}
