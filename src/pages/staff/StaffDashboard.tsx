@@ -13,7 +13,7 @@ import {
 } from 'react-icons/fa';
 
 import DashboardContent from './DashboardContent';
-import CustomerRegistrationContent from './CustomerRegistrationContent';
+import CustomerRegistrationContent from './CustomerRegistration';
 import RewardsCheckContent from './RewardsCheckContent';
 import AddRewardsContent from './AddRewardsContent';
 import ShiftActiveContent from './ShiftActiveContent';
