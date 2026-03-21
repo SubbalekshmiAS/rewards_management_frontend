@@ -62,12 +62,12 @@ const StaffDashboard: React.FC = () => {
   };
 
   const navigate = useNavigate();
-  
+
   const handleLogout = () => {
-  localStorage.removeItem("token");
-  localStorage.removeItem("user");
-  navigate("/login");
-};
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
     <div className="staff-dashboard d-flex">
@@ -77,16 +77,15 @@ const StaffDashboard: React.FC = () => {
           {menuItems.map((item) => (
             <li key={item.key} className="nav-item mb-2">
               <button
-               onClick={() => {
-                    if (item.key === "logout") {
-                      handleLogout();
-                    } else {
-                      setActiveMenu(item.key);
-                    }
-                  }}
-                className={`nav-btn d-flex align-items-center w-100 text-start ${
-                  activeMenu === item.key ? 'active' : ''
-                }`}
+                onClick={() => {
+                  if (item.key === "logout") {
+                    handleLogout();
+                  } else {
+                    setActiveMenu(item.key);
+                  }
+                }}
+                className={`nav-btn d-flex align-items-center w-100 text-start ${activeMenu === item.key ? 'active' : ''
+                  }`}
               >
                 <span className="me-2">{item.icon}</span>
                 {item.label}

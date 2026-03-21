@@ -48,7 +48,6 @@ export const registerCustomer = async (data: any) => {
   } catch (err: any) {
     console.error("API ERROR:", err.response);
 
-    // 🔥 throw REAL backend error
     if (err.response?.data) {
       throw err.response.data;
     }

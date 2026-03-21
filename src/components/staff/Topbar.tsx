@@ -1,4 +1,3 @@
-// components/staff/Topbar.tsx
 import React from "react";
 
 const Topbar: React.FC = () => (
@@ -10,7 +9,6 @@ const Topbar: React.FC = () => (
     />
     <div className="flex items-center gap-4">
       <button className="relative">
-        🔔
         <span className="absolute -top-1 -right-1 bg-red-500 rounded-full w-2 h-2"></span>
       </button>
       <div className="flex items-center gap-2">

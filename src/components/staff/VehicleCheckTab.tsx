@@ -13,7 +13,7 @@ export default function VehicleCheckTab() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState("");
 
-  // 🔍 CHECK FLOW
+  // CHECK FLOW
   const handleCheck = async () => {
     setError("");
     setData(null);
@@ -24,12 +24,12 @@ export default function VehicleCheckTab() {
     }
 
     try {
-      // 1️⃣ Check vehicle
+      // Check vehicle
       const res = await checkVehicle(vehicle);
       setData(res);
       return;
     } catch {
-      // 2️⃣ Vehicle not found → check mobile
+      // Vehicle not found → check mobile
       if (!mobile) {
         setError("Vehicle not found. Enter mobile number");
         return;
@@ -48,7 +48,7 @@ export default function VehicleCheckTab() {
     }
   };
 
-  // 🚗 ADD VEHICLE
+  // ADD VEHICLE
   const handleAddVehicle = async () => {
     if (!vehicleType) {
       setError("Select vehicle type");
@@ -119,7 +119,7 @@ export default function VehicleCheckTab() {
             </p>
           )}
 
-          {/* 🚗 ADD VEHICLE (only if not found) */}
+          {/* ADD VEHICLE (only if not found) */}
           {data.vehicle_not_found && (
             <div className="mt-3">
 

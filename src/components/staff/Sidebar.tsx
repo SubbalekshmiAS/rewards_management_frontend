@@ -1,4 +1,3 @@
-// components/staff/Sidebar.tsx
 import React from "react";
 import { FaTachometerAlt, FaUsers, FaChalkboardTeacher, FaBook } from "react-icons/fa";
 
@@ -21,9 +20,8 @@ const Sidebar: React.FC<Props> = ({ active, onSelect }) => {
         <button
           key={item.name}
           onClick={() => onSelect(item.name)}
-          className={`flex items-center gap-3 p-3 rounded hover:bg-blue-800 transition ${
-            active === item.name ? "bg-blue-700 font-bold" : ""
-          }`}
+          className={`flex items-center gap-3 p-3 rounded hover:bg-blue-800 transition ${active === item.name ? "bg-blue-700 font-bold" : ""
+            }`}
         >
           {item.icon} {item.name}
         </button>

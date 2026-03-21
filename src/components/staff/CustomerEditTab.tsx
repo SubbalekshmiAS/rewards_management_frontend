@@ -33,7 +33,7 @@ export default function CustomerEditTab() {
   const [currentVehicleId, setCurrentVehicleId] = useState<number | null>(null);
   const [currentAltIndex, setCurrentAltIndex] = useState<number | null>(null);
 
-  // 🔍 SEARCH
+  // SEARCH
   const handleSearch = () => {
     if (!search) {
       setErrors({ search: "Enter vehicle number or mobile" });
@@ -64,7 +64,7 @@ export default function CustomerEditTab() {
     setForm({ ...form, [key]: value });
   };
 
-  // 🔥 REMOVE EMPTY ALT FIELD
+  // REMOVE EMPTY ALT FIELD
   const removeAltField = (i: number) => {
     const arr = alternateMobiles.filter((_, index) => index !== i);
     setAlternateMobiles(arr);
@@ -241,71 +241,71 @@ export default function CustomerEditTab() {
           <h6>Alternate Mobiles</h6>
 
           {alternateMobiles.map((mob, i) => (
-  <div className="row mb-2" key={i}>
+            <div className="row mb-2" key={i}>
 
-    <div className="col-md-6 d-flex">
-      <input
-        className="form-control me-2"
-        value={mob}
-        onChange={(e) => handleAltChange(i, e.target.value)}
-      />
+              <div className="col-md-6 d-flex">
+                <input
+                  className="form-control me-2"
+                  value={mob}
+                  onChange={(e) => handleAltChange(i, e.target.value)}
+                />
 
-      <button
-        className="btn btn-outline-primary btn-sm me-2"
-        onClick={() =>
-          openEditModal("alternate_mobile", mob, undefined, i)
-        }
-      >
-        Edit
-      </button>
-
-      {!mob ? (
                 <button
-                  className="btn btn-outline-danger btn-sm me-2"
-                  onClick={() => removeAltField(i)}
+                  className="btn btn-outline-primary btn-sm me-2"
+                  onClick={() =>
+                    openEditModal("alternate_mobile", mob, undefined, i)
+                  }
                 >
-                  Remove
+                  Edit
                 </button>
-              ) : (
-                <button
-                  className="btn btn-outline-danger btn-sm me-2"
-                  onClick={() => handleAltDeleteRequest(i)}
-                >
-                  Delete
-                </button>
-              )}
 
-      {/* remove buttons */}
-      {altRequests.includes(i) && (
-        <button
-          className="btn btn-outline-secondary btn-sm me-2"
-          onClick={() => removeAltEditRequest(i)}
-        >
-          Remove Edit Req
-        </button>
-      )}
+                {!mob ? (
+                  <button
+                    className="btn btn-outline-danger btn-sm me-2"
+                    onClick={() => removeAltField(i)}
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-outline-danger btn-sm me-2"
+                    onClick={() => handleAltDeleteRequest(i)}
+                  >
+                    Delete
+                  </button>
+                )}
 
-      {altDeleteRequests.includes(i) && (
-        <button
-          className="btn btn-outline-secondary btn-sm"
-          onClick={() => removeAltDeleteRequest(i)}
-        >
-          Remove Delete Req
-        </button>
-      )}
-    </div>
+                {/* remove buttons */}
+                {altRequests.includes(i) && (
+                  <button
+                    className="btn btn-outline-secondary btn-sm me-2"
+                    onClick={() => removeAltEditRequest(i)}
+                  >
+                    Remove Edit Req
+                  </button>
+                )}
 
-  </div>
-))}
+                {altDeleteRequests.includes(i) && (
+                  <button
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => removeAltDeleteRequest(i)}
+                  >
+                    Remove Delete Req
+                  </button>
+                )}
+              </div>
+
+            </div>
+          ))}
 
           <div className="d-inline-block mb-3">
-  <button
-    className="btn btn-outline-primary btn-sm"
-    onClick={addAlternateMobile}
-  >
-    + Add Alternate Mobile
-  </button>
-</div>
+            <button
+              className="btn btn-outline-primary btn-sm"
+              onClick={addAlternateMobile}
+            >
+              + Add Alternate Mobile
+            </button>
+          </div>
 
           {/* VEHICLES */}
           <h6>Vehicles</h6>

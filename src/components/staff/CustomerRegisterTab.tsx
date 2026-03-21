@@ -21,7 +21,7 @@ export default function CustomerRegisterTab() {
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
-  // 🔥 OTP STATES
+  // OTP STATES
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
@@ -65,7 +65,7 @@ export default function CustomerRegisterTab() {
     setVehicles(vehicles.filter((_, i) => i !== index));
   };
 
-  // ✅ VALIDATION
+  // VALIDATION
   const validate = () => {
     let newErrors: any = {};
 
@@ -91,7 +91,7 @@ export default function CustomerRegisterTab() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // 🔥 REGISTER
+  // REGISTER
   const handleSubmit = async () => {
     if (!validate()) return;
 
@@ -103,26 +103,26 @@ export default function CustomerRegisterTab() {
         vehicles
       });
 
-      // ✅ OPEN OTP MODAL (NO ALERT)
+      // OPEN OTP MODAL (NO ALERT)
       setShowOtpModal(true);
       setSuccessMessage("");
 
     } catch (err: any) {
-    console.error("FULL ERROR:", err);
+      console.error("FULL ERROR:", err);
 
-    if (err?.errors) {
-      setErrors(err.errors); // Laravel validation
-    } else if (err?.message) {
-      alert(err.message);
-    } else {
-      alert("Unknown error");
-    }
-  } finally {
+      if (err?.errors) {
+        setErrors(err.errors); // Laravel validation
+      } else if (err?.message) {
+        alert(err.message);
+      } else {
+        alert("Unknown error");
+      }
+    } finally {
       setLoading(false);
     }
   };
 
-  // 🔥 VERIFY OTP
+  // VERIFY OTP
   const handleVerifyOtp = async () => {
     if (!otp) {
       setOtpError("Enter OTP");
@@ -133,8 +133,8 @@ export default function CustomerRegisterTab() {
       setOtpLoading(true);
 
       interface VerifyOtpResponse {
-      message: string;
-    }
+        message: string;
+      }
 
       const res: VerifyOtpResponse = await verifyOtp(form.mobile, otp);
 
@@ -173,7 +173,7 @@ export default function CustomerRegisterTab() {
           {successMessage}
         </div>
       )}
-      
+
 
       <div className="row">
 
@@ -295,7 +295,7 @@ export default function CustomerRegisterTab() {
         </button>
       </div>
 
-      {/* 🔥 OTP MODAL */}
+      {/* OTP MODAL */}
       {showOtpModal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog">

@@ -1,5 +1,3 @@
-// components/staff/DashboardMenu.tsx
-//import React from "react";
 
 type MenuProps = {
   onSelect: (panel: string) => void;
@@ -22,9 +20,8 @@ const DashboardMenu: React.FC<MenuProps> = ({ onSelect, activePanel }) => {
         <button
           key={item}
           onClick={() => onSelect(item)}
-          className={`p-3 rounded text-left hover:bg-blue-800 transition ${
-            activePanel === item ? "bg-blue-700 font-bold" : ""
-          }`}
+          className={`p-3 rounded text-left hover:bg-blue-800 transition ${activePanel === item ? "bg-blue-700 font-bold" : ""
+            }`}
         >
           {item}
         </button>
