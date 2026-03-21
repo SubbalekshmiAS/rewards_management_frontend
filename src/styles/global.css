@@ -1,5 +1,13 @@
-/* body{
-margin:0;
-font-family:system-ui;
-background:#f5f7fb;
-} */
+.small-input {
+  font-size: 14px;
+}
+
+.page-heading {
+  color: #0d6efd; /* bootstrap primary */
+  font-weight: 600;
+}
+
+.add-vehicle-btn {
+  font-size: 13px;
+  padding: 4px 10px;
+}
