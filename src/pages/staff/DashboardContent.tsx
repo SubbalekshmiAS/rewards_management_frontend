@@ -1,4 +1,3 @@
-// pages/staff/DashboardContent.tsx
 import React from "react";
 
 const DashboardContent: React.FC = () => (

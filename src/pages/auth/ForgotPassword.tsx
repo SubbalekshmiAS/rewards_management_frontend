@@ -5,7 +5,7 @@ export default function ForgotPassword() {
 
   const [email, setEmail] = useState("");
 
-  const handleSubmit = async (e:any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     try {
@@ -31,7 +31,7 @@ export default function ForgotPassword() {
     <AuthLayout>
       <div className="d-flex justify-content-center align-items-center vh-100">
 
-        <div className="card p-4 shadow" style={{width:"400px"}}>
+        <div className="card p-4 shadow" style={{ width: "400px" }}>
 
           <h3 className="mb-3">Forgot Password</h3>
 
@@ -44,7 +44,7 @@ export default function ForgotPassword() {
                 type="email"
                 className="form-control"
                 value={email}
-                onChange={(e)=>setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>

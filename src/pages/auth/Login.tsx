@@ -5,31 +5,31 @@ import "../../styles/auth.css";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Login(){
+export default function Login() {
 
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
-  const [errors,setErrors] = useState<any>({});
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<any>({});
   const navigate = useNavigate();
 
-  useEffect(()=>{
-    if(Object.keys(errors).length > 0){
-      const timer = setTimeout(()=>{
+  useEffect(() => {
+    if (Object.keys(errors).length > 0) {
+      const timer = setTimeout(() => {
         setErrors({});
-      },4000);
+      }, 4000);
 
-      return ()=>clearTimeout(timer);
+      return () => clearTimeout(timer);
     }
-  },[errors]);
+  }, [errors]);
 
-  const handleSubmit = async (e:any)=>{
+  const handleSubmit = async (e: any) => {
 
     e.preventDefault();
     setErrors({});
 
-    const result = await loginService(email,password);
+    const result = await loginService(email, password);
 
-    if(!result.success){
+    if (!result.success) {
       setErrors(result.errors);
       return;
     }
@@ -39,7 +39,7 @@ export default function Login(){
     localStorage.setItem("user", JSON.stringify(result.data.user));
 
     // redirect
-   const user = result.data.user;
+    const user = result.data.user;
 
     if (user.role === "staff") {
       navigate("/staff/dashboard");
@@ -51,11 +51,9 @@ export default function Login(){
 
     console.log(result.data);
 
-    //alert("Login successful");
-
   };
 
-  return(
+  return (
 
     <AuthLayout>
 
@@ -85,9 +83,9 @@ export default function Login(){
             className="form-control"
             placeholder="Enter email"
             value={email}
-            onChange={(e)=>{
+            onChange={(e) => {
               setEmail(e.target.value);
-              setErrors({...errors,email:null});
+              setErrors({ ...errors, email: null });
             }}
           />
 
@@ -110,9 +108,9 @@ export default function Login(){
             className="form-control"
             placeholder="Enter password"
             value={password}
-            onChange={(e)=>{
+            onChange={(e) => {
               setPassword(e.target.value);
-              setErrors({...errors,password:null});
+              setErrors({ ...errors, password: null });
             }}
           />
 

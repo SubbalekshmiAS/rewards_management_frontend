@@ -1,6 +1,3 @@
-// components/staff/StaffCard.tsx
-//import React from "react";
-
 type Props = {
   title: string;
   value: string | number;
