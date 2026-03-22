@@ -78,3 +78,18 @@ export const verifyOtp = async (mobile: string, otp: string) => {
     throw err.response?.data || { message: "OTP verification failed" };
   }
 };
+
+interface CheckCustomerStatusResponse {
+  registered: boolean;
+  otp_verified: boolean;
+}
+
+export const checkCustomerStatus = async (mobile: string): Promise<CheckCustomerStatusResponse> => {
+  try {
+    const response = await API.post("/customers/check-status", { mobile });
+    return response.data;
+  } catch (err: any) {
+    console.error("Error checking customer status:", err);
+    throw new Error(err?.response?.data?.message || "Failed to check status");
+  }
+};

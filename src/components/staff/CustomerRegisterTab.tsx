@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   registerCustomer,
   verifyOtp,
+  checkCustomerStatus,
   sendOtp,
 } from "../../api/services/customer/customerService";
 
@@ -27,6 +28,8 @@ export default function CustomerRegisterTab() {
   const [otpError, setOtpError] = useState("");
   const [otpLoading, setOtpLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  // Add these new states at the top
+  const [statusMessage, setStatusMessage] = useState(""); // CHANGED: unified message for registration/OTP
 
   // handle customer fields
   const handleChange = (key: string, value: string) => {
@@ -61,7 +64,11 @@ export default function CustomerRegisterTab() {
   };
 
   const removeVehicleRow = (index: number) => {
-    if (vehicles.length === 1) return;
+    if (vehicles.length === 1) {
+      // Reset the single row instead of doing nothing
+      setVehicles([{ vehicle_number: "", vehicle_type_id: "" }]);
+      return;
+    }
     setVehicles(vehicles.filter((_, i) => i !== index));
   };
 
@@ -139,6 +146,14 @@ export default function CustomerRegisterTab() {
       const res: VerifyOtpResponse = await verifyOtp(form.mobile, otp);
 
       setSuccessMessage(res.message || "Customer verified successfully");
+      setStatusMessage(""); // clear previous info message
+      setShowOtpModal(false);
+
+      // reset form after successful OTP
+      setForm({ mobile: "", name: "", email: "", address: "" });
+      setVehicles([{ vehicle_number: "", vehicle_type_id: "" }]);
+      setOtp("");
+      setErrors({});
       setTimeout(() => setSuccessMessage(""), 3000);
 
       setShowOtpModal(false);
@@ -162,15 +177,46 @@ export default function CustomerRegisterTab() {
     }
   };
 
+  const handleOtpClose = async () => {
+    try {
+      setOtpLoading(true);
+
+      const res = await checkCustomerStatus(form.mobile); // CHANGED: backend call
+
+      if (res.registered && !res.otp_verified) {
+        setStatusMessage(
+          "Customer registration completed. OTP verification pending."
+        );
+      } else if (res.registered && res.otp_verified) {
+        setStatusMessage("Customer already verified.");
+      } else {
+        setStatusMessage("Customer registration not completed.");
+      }
+
+      setShowOtpModal(false);
+      setTimeout(() => setStatusMessage(""), 3000);
+
+      // Always reset form locally after modal close
+      setForm({ mobile: "", name: "", email: "", address: "" });
+      setVehicles([{ vehicle_number: "", vehicle_type_id: "" }]);
+      setOtp("");
+      setErrors({});
+    } catch (err: any) {
+      setStatusMessage("Error checking customer status.");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
   return (
     <div className="card p-4">
 
       <h5 className="mb-3 page-heading">Register New Customer</h5>
 
       {/* UPDATED: Display success message */}
-      {successMessage && (
-        <div className="text-success mb-2">
-          {successMessage}
+      {(statusMessage || successMessage) && (
+        <div className="status-box mb-2">
+          {successMessage || statusMessage}
         </div>
       )}
 
@@ -264,7 +310,7 @@ export default function CustomerRegisterTab() {
             )}
           </div>
 
-          <div className="col-md-2 d-flex align-items-center">
+          <div className="col-md-2 d-flex align-items-start">
             <button
               className="btn btn-outline-danger btn-sm"
               onClick={() => removeVehicleRow(i)}
@@ -319,7 +365,7 @@ export default function CustomerRegisterTab() {
               <div className="d-flex justify-content-end gap-2 mt-3">
                 <button
                   className="btn btn-secondary btn-sm"
-                  onClick={() => setShowOtpModal(false)}
+                  onClick={handleOtpClose}
                 >
                   Close
                 </button>
