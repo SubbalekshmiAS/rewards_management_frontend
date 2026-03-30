@@ -7,7 +7,9 @@
 
 .sidebar {
   width: 240px;
-  background-color: #3a7bd5;
+  /* background-color: #3a7bd5; */
+  background-color: #3b7cde; /* same as btn-primary */
+
   /* 2e59d9; */
   color: white;
   padding: 1rem;
@@ -48,7 +50,7 @@
 
 .nav-btn.active {
   border-left: 4px solid #ffffff;
-  background-color: #1f4bb0;
+  background-color: #0d3592;
   font-weight: 700;
 }
 
