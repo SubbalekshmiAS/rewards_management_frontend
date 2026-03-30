@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
-  checkVehicle,
-  checkMobile,
+  //checkVehicle,
+  //checkMobile,
   addVehicle,
 } from "../../api/services/customer/customerService";
 

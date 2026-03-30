@@ -1,8 +1,18 @@
 import { useState } from "react";
+import {
+  searchCustomer,
+  requestCustomerUpdate,
+  sendAltOtpApi
+} from "../../api/services/customer/customerService";
+import type { Customer, Vehicle, AlternateMobile } from "../../types/customer";
+import { vehicleTypeOptions, vehicleTypeMap } from "../../constants/vehicleTypes";
 
 export default function CustomerEditTab() {
   const [search, setSearch] = useState("");
-  const [customer, setCustomer] = useState<any>(null);
+  const [mobile, setMobile] = useState("");
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+
 
   const [form, setForm] = useState({
     mobile: "",
@@ -12,8 +22,8 @@ export default function CustomerEditTab() {
     alternate_mobile: "",
   });
 
-  const [vehicles, setVehicles] = useState<any[]>([]);
-  const [alternateMobiles, setAlternateMobiles] = useState<string[]>([""]);
+  //const [alternateMobiles, setAlternateMobiles] = useState<string[]>([]);
+  const [alternateMobiles, setAlternateMobiles] = useState<AlternateMobile[]>([]);
 
   const [errors, setErrors] = useState<any>({});
 
@@ -21,6 +31,9 @@ export default function CustomerEditTab() {
   const [vehicleDeleteRequests, setVehicleDeleteRequests] = useState<number[]>([]);
   const [altRequests, setAltRequests] = useState<number[]>([]);
   const [altDeleteRequests, setAltDeleteRequests] = useState<number[]>([]);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [otpAltIndex, setOtpAltIndex] = useState<number | null>(null);
 
   const [newVehicle, setNewVehicle] = useState({
     number: "",
@@ -32,32 +45,59 @@ export default function CustomerEditTab() {
   const [editValue, setEditValue] = useState("");
   const [currentVehicleId, setCurrentVehicleId] = useState<number | null>(null);
   const [currentAltIndex, setCurrentAltIndex] = useState<number | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [successMsg, setSuccessMsg] = useState("");
 
   // SEARCH
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (!search) {
-      setErrors({ search: "Enter vehicle number or mobile" });
+      setErrors({ search: "Enter mobile or vehicle number" });
       return;
     }
 
-    const mockData = {
-      mobile: "9876543210",
-      name: "Arun",
-      email: "arun@gmail.com",
-      address: "Chennai",
-      alternate_mobile: "",
-      alternate_mobiles: ["9999999999"],
-      vehicles: [
-        { id: 1, number: "TN01AB1234", type: "Car / Jeep" },
-        { id: 2, number: "TN02XY5678", type: "Bike / Scooter" },
-      ],
-    };
+    const isMobile = /^[6-9]\d{9}$/.test(search);
+    const isVehicle = /^[A-Z0-9]{6,12}$/.test(search.toUpperCase());
 
-    setCustomer(mockData);
-    setForm(mockData);
-    setVehicles(mockData.vehicles);
-    setAlternateMobiles(mockData.alternate_mobiles);
-    setErrors({});
+    if (!isMobile && !isVehicle) {
+      setErrors({
+        search: "Enter valid mobile (10 digits) or vehicle number"
+      });
+      return;
+    }
+
+    try {
+      const res = await searchCustomer(search); // API call
+      setCustomer(res);
+      setAlternateMobiles(
+        (res.alternate_mobiles || []).map((m: any) => ({
+          id: m.id,
+          mobile: m.mobile,
+          vehicles: m.vehicles || [],
+          verified: m.verified || false,
+          otpSent: false
+        }))
+      );
+      setForm({
+        mobile: res.mobile || "",
+        name: res.name || "",
+        email: res.email || "",
+        address: res.address || "",
+        alternate_mobile: "",
+      });
+      //MAP VEHICLES
+      setVehicles(
+        (res.vehicles || []).map((v: any) => ({
+          id: v.id,
+          number: v.number,
+          type: v.type,
+        }))
+      );
+      setErrors({});
+    } catch (err: any) {
+      setCustomer(null);
+      setErrors({ search: err.message || "Customer not found" });
+    }
   };
 
   const handleChange = (key: string, value: string) => {
@@ -97,6 +137,24 @@ export default function CustomerEditTab() {
     setShowModal(false);
   };
 
+  const confirmDeleteAlt = () => {
+    if (deleteIndex === null) return;
+
+    const arr = [...alternateMobiles];
+
+    // if already saved in DB → mark pending
+    if (arr[deleteIndex].id) {
+      arr[deleteIndex].deleteRequested = true;
+    } else {
+      // if not saved yet → remove directly
+      arr.splice(deleteIndex, 1);
+    }
+
+    setAlternateMobiles(arr);
+    setShowDeleteModal(false);
+    setDeleteIndex(null);
+  };
+
   const handleVehicleDeleteRequest = (id: number) => {
     if (!vehicleDeleteRequests.includes(id)) {
       setVehicleDeleteRequests([...vehicleDeleteRequests, id]);
@@ -112,12 +170,121 @@ export default function CustomerEditTab() {
   };
 
   const addAlternateMobile = () => {
-    setAlternateMobiles([...alternateMobiles, ""]);
+    setAlternateMobiles([
+      ...alternateMobiles,
+      {
+        mobile: "",
+        vehicles: [],
+        verified: false,
+        otpSent: false
+      }
+    ]);
   };
 
-  const handleAltChange = (i: number, val: string) => {
+  const isAltReadyForOtp = (alt: AlternateMobile) => {
+    const isValidMobile = /^[6-9]\d{9}$/.test(alt.mobile);
+    const hasVehicle = alt.vehicles && alt.vehicles.length > 0;
+
+    return isValidMobile && hasVehicle;
+  };
+
+ const handleAltChange = (i: number, val: string) => {
+  const updated = alternateMobiles.map((item, index) =>
+    index === i
+      ? {
+          ...item,
+          mobile: val,
+          error: {
+            ...item.error,
+            mobile: "" // ✅ clear only mobile error while typing
+          }
+        }
+      : item
+  );
+
+  setAlternateMobiles(updated);
+};
+
+  const handleMobileUpdate = async () => {
+    let newErrors: any = {};
+
+    // FRONTEND VALIDATION
+    if (!editValue) {
+      newErrors.mobile = "Mobile is required";
+    } else if (!/^[6-9]\d{9}$/.test(editValue)) {
+      newErrors.mobile = "Enter valid 10-digit mobile number";
+    }
+
+    setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) return;
+
+    try {
+      // API CALL
+      console.log(customer);
+      await requestCustomerUpdate(customer.customer_id, {
+        field: "mobile",
+        new_value: editValue,
+      });
+
+      setSuccessMsg("Update request sent for approval");
+      setShowModal(false);
+
+    } catch (err: any) {
+  console.log("UPDATE ERROR:", err);
+
+  if (err?.errors?.mobile) {
+    setErrors({
+      mobile: Array.isArray(err.errors.mobile)
+              ? err.errors.mobile[0]
+              : err.errors.mobile
+                });
+  } else if (err?.message) {
+    setErrors({
+      mobile: err.message
+    });
+  } else {
+    setErrors({
+      mobile: "Update failed"
+    });
+  }
+}
+  };
+
+  const assignVehicleToAlt = (i: number, vehicle: Vehicle) => {
     const arr = [...alternateMobiles];
-    arr[i] = val;
+    arr[i].vehicles.push(vehicle);
+    setAlternateMobiles(arr);
+  };
+
+  const sendOtp = async (i: number) => {
+  try {
+    // send OTP to REGISTERED mobile
+    await sendAltOtpApi(form.mobile, "alternate");
+
+    // update UI (immutable)
+    const updated = alternateMobiles.map((item, index) =>
+      index === i ? { ...item, otpSent: true } : item
+    );
+
+    setAlternateMobiles(updated);
+
+    // open popup
+    setOtpAltIndex(i);
+    setShowOtpModal(true);
+
+  } catch (err: any) {
+    console.log("OTP ERROR:", err);
+
+    alert(
+      err?.response?.data?.message || "Failed to send OTP"
+    );
+  }
+};
+
+  const verifyOtp = (i: number) => {
+    const arr = [...alternateMobiles];
+    arr[i].verified = true;
     setAlternateMobiles(arr);
   };
 
@@ -153,6 +320,27 @@ export default function CustomerEditTab() {
     setNewVehicle({ number: "", type: "" });
   };
 
+  const handleVerifyOtp = () => {
+    let newErrors: any = {};
+
+    if (!otpValue) {
+      newErrors.otp = "OTP is required";
+    } else if (!/^\d{6}$/.test(otpValue)) {
+      newErrors.otp = "Enter valid 6-digit OTP";
+    }
+
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+
+    const updated = [...alternateMobiles];
+    updated[otpAltIndex!].verified = true;
+
+    setAlternateMobiles(updated);
+    setShowOtpModal(false);
+    setOtpValue("");
+    setErrors({});
+  };
+
   const handleUpdate = () => {
     let newErrors: any = {};
 
@@ -170,6 +358,12 @@ export default function CustomerEditTab() {
     <div className="card p-4">
       <h5 className="mb-3 text-primary">Edit Customer</h5>
 
+      {errors.search && (
+        <div className="text-danger mt-1">
+          {errors.search}
+        </div>
+      )}
+
       {/* SEARCH */}
       <div className="row mb-4">
         <div className="col-md-8">
@@ -177,7 +371,7 @@ export default function CustomerEditTab() {
             className={`form-control ${errors.search ? "is-invalid" : ""}`}
             placeholder="Enter Vehicle Number or Mobile"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value.toUpperCase())}
           />
         </div>
 
@@ -240,65 +434,140 @@ export default function CustomerEditTab() {
           <hr />
           <h6>Alternate Mobiles</h6>
 
-          {alternateMobiles.map((mob, i) => (
-            <div className="row mb-2" key={i}>
+          {alternateMobiles.length === 0 && (
+            <p className="text-muted">No alternate numbers added</p>
+          )}
 
-              <div className="col-md-6 d-flex">
+          {alternateMobiles.map((alt, i) => (
+            <div className="alt-row" key={i}>
+
+              {/* MOBILE */}
+              <div className="alt-col">
                 <input
-                  className="form-control me-2"
-                  value={mob}
+                  className={`form-control ${alt.error?.mobile ? "is-invalid" : ""}`}
+                  placeholder="Alternate Mobile"
+                  value={alt.mobile}
                   onChange={(e) => handleAltChange(i, e.target.value)}
                 />
-
-                <button
-                  className="btn btn-outline-primary btn-sm me-2"
-                  onClick={() =>
-                    openEditModal("alternate_mobile", mob, undefined, i)
-                  }
-                >
-                  Edit
-                </button>
-
-                {!mob ? (
-                  <button
-                    className="btn btn-outline-danger btn-sm me-2"
-                    onClick={() => removeAltField(i)}
-                  >
-                    Remove
-                  </button>
-                ) : (
-                  <button
-                    className="btn btn-outline-danger btn-sm me-2"
-                    onClick={() => handleAltDeleteRequest(i)}
-                  >
-                    Delete
-                  </button>
-                )}
-
-                {/* remove buttons */}
-                {altRequests.includes(i) && (
-                  <button
-                    className="btn btn-outline-secondary btn-sm me-2"
-                    onClick={() => removeAltEditRequest(i)}
-                  >
-                    Remove Edit Req
-                  </button>
-                )}
-
-                {altDeleteRequests.includes(i) && (
-                  <button
-                    className="btn btn-outline-secondary btn-sm"
-                    onClick={() => removeAltDeleteRequest(i)}
-                  >
-                    Remove Delete Req
-                  </button>
-                )}
+                <div className="error-box">{alt.error?.mobile || ""}</div>
               </div>
 
+              {/* VEHICLE */}
+              <div className="alt-col">
+                <select
+                  className={`form-control ${alt.error?.vehicle ? "is-invalid" : ""}`}
+                  onChange={(e) => {
+                    const v = vehicles.find(v => v.id === Number(e.target.value));
+                    if (v) assignVehicleToAlt(i, v);
+                  }}
+                >
+                  <option value="">Assign Vehicle</option>
+                  {vehicles.map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.number} ({vehicleTypeMap[v.type] || "Unknown"})
+                    </option>
+                  ))}
+                </select>
+                <div className="error-box">{alt.error?.vehicle || ""}</div>
+              </div>
+
+              {/* BUTTONS */}
+              <div className="alt-actions">
+
+                {!alt.verified && (
+                  <button
+                    className="btn btn-warning btn-sm"
+                    onClick={async () => {
+  const arr = [...alternateMobiles];
+  const currentAlt = arr[i];
+
+  let error: any = {};
+
+  // FRONTEND VALIDATION
+  if (!currentAlt.mobile) {
+    error.mobile = "Mobile is required";
+  } else if (!/^[6-9]\d{9}$/.test(currentAlt.mobile)) {
+    error.mobile = "Enter valid 10-digit mobile";
+  }
+
+  if (!currentAlt.vehicles || currentAlt.vehicles.length === 0) {
+    error.vehicle = "Assign at least one vehicle";
+  }
+
+  arr[i].error = error;
+  setAlternateMobiles(arr);
+
+  if (Object.keys(error).length > 0) return;
+
+  try {
+    //console.log(customer);
+    // BACKEND CHECK
+    console.log(customer.mobile);
+    await sendAltOtpApi(currentAlt.mobile,"alternate",customer.mobile,customer.customer_id);
+
+    // IF SUCCESS → SEND OTP
+    arr[i].otpSent = true;
+    setAlternateMobiles(arr);
+
+    setOtpAltIndex(i);
+    setShowOtpModal(true);
+
+  } catch (err: any) {
+  console.log("API ERROR:", err.response?.data);
+
+  const apiError = err?.response?.data?.errors?.mobile;
+
+  const message =
+    Array.isArray(apiError)
+      ? apiError[0]
+      : apiError || "Mobile validation failed";
+
+  // IMMUTABLE UPDATE (important)
+  const updated = alternateMobiles.map((item, index) =>
+    index === i
+      ? {
+          ...item,
+          error: {
+            ...item.error,
+            mobile: message
+          }
+        }
+      : item
+  );
+
+  setAlternateMobiles(updated);
+}
+}}
+                  >
+                    Send OTP
+                  </button>
+                )}
+
+                <button
+                  className="btn btn-outline-danger btn-sm"
+                  onClick={() => {
+                    if (alt.id) {
+                      setDeleteIndex(i);
+                      setShowDeleteModal(true);
+                    } else {
+                      const arr = [...alternateMobiles];
+                      arr.splice(i, 1);
+                      setAlternateMobiles(arr);
+                    }
+                  }}
+                >
+                  Delete
+                </button>
+
+                {alt.verified && (
+                  <span className="badge bg-success">Verified</span>
+                )}
+
+              </div>
             </div>
           ))}
 
-          <div className="d-inline-block mb-3">
+          <div className="mt-2">
             <button
               className="btn btn-outline-primary btn-sm"
               onClick={addAlternateMobile}
@@ -306,6 +575,7 @@ export default function CustomerEditTab() {
               + Add Alternate Mobile
             </button>
           </div>
+          <hr />
 
           {/* VEHICLES */}
           <h6>Vehicles</h6>
@@ -321,7 +591,7 @@ export default function CustomerEditTab() {
               <input
                 className="form-control me-2"
                 style={{ maxWidth: "140px" }}
-                value={v.type}
+                value={vehicleTypeMap[v.type]}
                 disabled
               />
 
@@ -374,14 +644,16 @@ export default function CustomerEditTab() {
               className="form-control me-2"
               value={newVehicle.type}
               onChange={(e) =>
-                setNewVehicle({ ...newVehicle, type: e.target.value })
+                setNewVehicle({ ...newVehicle, type: Number(e.target.value) })
               }
             >
-              <option value="">Type</option>
-              <option>Bike</option>
-              <option>Car</option>
-              <option>Auto</option>
-              <option>Heavy</option>
+              <option value="">Select Type *</option>
+
+              {vehicleTypeOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
             </select>
 
             <button className="btn btn-primary btn-sm" onClick={handleAddVehicle}>
@@ -400,32 +672,192 @@ export default function CustomerEditTab() {
       {/* MODAL */}
       {showModal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog">
-            <div className="modal-content p-3">
-              <h6>Edit {editField}</h6>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4">
 
-              <input
-                className="form-control mb-3"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value.toUpperCase())}
-              />
+              <h5 className="mb-3">Edit Mobile</h5>
 
-              <div className="d-flex justify-content-end gap-2">
+              {/* INPUT */}
+              <div className="mb-3">
+                <input
+                  className={`form-control ${errors.mobile ? "is-invalid" : ""}`}
+                  value={editValue}
+                  onChange={(e) => {
+                    setEditValue(e.target.value);
+
+                    // 🔥 clear error on typing
+                    setErrors((prev: any) => ({
+                      ...prev,
+                      mobile: ""
+                    }));
+                  }}
+                />
+
+                {/* ERROR */}
+                {errors.mobile && (
+                  <div className="invalid-feedback d-block">
+                    {String(errors.mobile)} 
+                  </div>
+                )}
+              </div>
+
+              {/* ACTIONS */}
+              <div className="d-flex justify-content-end gap-2 mt-3">
                 <button
                   className="btn btn-secondary btn-sm"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    setErrors((prev: any) => ({
+                      ...prev,
+                      mobile: ""
+                    }));
+                  }}
                 >
                   Cancel
                 </button>
 
                 <button
                   className="btn btn-primary btn-sm"
-                  onClick={handleRequestSubmit}
+                  onClick={handleMobileUpdate}
                 >
-                  Request Change
+                  Send Update Request
                 </button>
               </div>
+
             </div>
+          </div>
+        </div>
+      )}
+{successMsg && (
+  <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content p-4 text-center">
+
+        <h5 className="text-success mb-3">Success</h5>
+        <p>{successMsg}</p>
+
+        <button
+          className="btn btn-primary btn-sm mt-2"
+          onClick={() => setSuccessMsg("")}
+        >
+          OK
+        </button>
+
+      </div>
+    </div>
+  </div>
+)}
+      {showDeleteModal && (
+        <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog">
+            <div className="modal-content p-3">
+
+              <h6>Confirm Delete</h6>
+              <p>Are you sure you want to send delete request?</p>
+
+              <div className="d-flex justify-content-end gap-2">
+                <button
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => setShowDeleteModal(false)}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={confirmDeleteAlt}
+                >
+                  Send Request
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+      {showOtpModal && otpAltIndex !== null && (
+        <div className="modal d-block otp-modal" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="modal-dialog modal-dialog-centered">
+
+            <div className="modal-content">
+
+              {/* HEADER */}
+              <div className="otp-header">
+                Verify Alternate Number
+              </div>
+
+              {/* BODY */}
+              <div className="otp-body">
+
+                {/* REGISTERED */}
+                <div>
+                  <div className="otp-label">Registered Number</div>
+                  <div className="otp-value">{form.mobile}</div>
+                </div>
+
+                {/* ALTERNATE */}
+                <div>
+                  <div className="otp-label">Alternate Number</div>
+                  <div className="otp-value">
+                    {alternateMobiles[otpAltIndex].mobile}
+                  </div>
+                </div>
+
+                <p className="text-muted small mb-3">
+                  An OTP has been sent to the registered number for verification.
+                </p>
+
+                {/* INPUT */}
+                <input
+                  className={`form-control form-control-lg mb-2 ${errors.otp ? "is-invalid" : ""
+                    }`}
+                  placeholder="Enter 6-digit OTP"
+                  value={otpValue}
+                  onChange={(e) => setOtpValue(e.target.value)}
+                />
+
+                {errors.otp && (
+                  <div className="invalid-feedback d-block">
+                    {errors.otp}
+                  </div>
+                )}
+
+                {/* ACTIONS */}
+                <div className="otp-actions">
+
+                  <button
+                    className="btn btn-outline-primary btn-sm"
+                    onClick={() => console.log("resend")}
+                  >
+                    Resend OTP
+                  </button>
+
+                  <div className="d-flex gap-2">
+                    <button
+                      className="btn btn-outline-secondary btn-sm"
+                      onClick={() => {
+                        setShowOtpModal(false);
+                        setOtpValue("");
+                        setErrors({});
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      className="btn btn-primary btn-sm"
+                      disabled={!otpValue || otpValue.length !== 6}
+                      onClick={handleVerifyOtp}
+                    >
+                      Verify
+                    </button>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
       )}
