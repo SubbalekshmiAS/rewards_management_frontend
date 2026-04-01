@@ -1,101 +1,62 @@
 import { useState } from "react";
-import {
-  //checkVehicle,
-  //checkMobile,
-  addVehicle,
-} from "../../api/services/customer/customerService";
+import { searchCustomer } from "../../api/services/customer/customerService";
+import { vehicleTypeMap } from "../../constants/vehicleTypes";
 
 export default function VehicleCheckTab() {
-  const [vehicle, setVehicle] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [vehicleType, setVehicleType] = useState("");
 
-  const [data, setData] = useState<any>(null);
+  const [search, setSearch] = useState("");
+  const [customer, setCustomer] = useState<any>(null);
   const [error, setError] = useState("");
 
-  // CHECK FLOW
-  const handleCheck = async () => {
+  const handleSearch = async () => {
     setError("");
-    setData(null);
+    setCustomer(null);
 
-    if (!vehicle) {
-      setError("Vehicle number is required");
+    if (!search) {
+      setError("Enter vehicle or mobile");
+      return;
+    }
+
+    const value = search.trim().toUpperCase();
+
+    const isMobile = /^[6-9]\d{9}$/.test(value);
+    const isVehicle = /^[A-Z0-9]{6,12}$/.test(value);
+
+    if (!isMobile && !isVehicle) {
+      setError("Enter valid mobile (10 digits) or vehicle number");
       return;
     }
 
     try {
-      // Check vehicle
-      const res = await checkVehicle(vehicle);
-      setData(res);
-      return;
-    } catch {
-      // Vehicle not found → check mobile
-      if (!mobile) {
-        setError("Vehicle not found. Enter mobile number");
-        return;
-      }
-
-      try {
-        const res = await checkMobile(mobile);
-
-        setData({
-          ...res,
-          vehicle_not_found: true,
-        });
-      } catch {
-        setError("Customer not found. Please register");
-      }
-    }
-  };
-
-  // ADD VEHICLE
-  const handleAddVehicle = async () => {
-    if (!vehicleType) {
-      setError("Select vehicle type");
-      return;
-    }
-
-    try {
-      await addVehicle({
-        customer_id: data.id,
-        vehicle_number: vehicle,
-        vehicle_type: vehicleType,
-      });
-
-      alert("Vehicle added successfully");
-    } catch {
-      setError("Failed to add vehicle");
+      const res = await searchCustomer(value);
+      setCustomer(res);
+    } catch (err: any) {
+      setError(err?.message || "Customer not found");
     }
   };
 
   return (
-    <div className="card p-4">
+    <div className="card p-3 p-md-4">
 
       <h5 className="text-primary mb-3">Vehicle Check</h5>
 
-      {/* INPUTS */}
-      <div className="row">
+      {/* SEARCH */}
+      <div className="row mb-3">
 
-        <div className="col-md-4 mb-3">
-          <label>Vehicle Number *</label>
+        <div className="col-12 col-md-8 mb-2 mb-md-0">
           <input
-            className="form-control"
-            value={vehicle}
-            onChange={(e) => setVehicle(e.target.value.toUpperCase())}
+            className={`form-control ${error ? "is-invalid" : ""}`}
+            placeholder="Enter vehicle number or mobile"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <div className="col-md-4 mb-3">
-          <label>Mobile Number</label>
-          <input
-            className="form-control"
-            value={mobile}
-            onChange={(e) => setMobile(e.target.value)}
-          />
-        </div>
-
-        <div className="col-md-4 d-flex align-items-end mb-3">
-          <button className="btn btn-primary px-4" onClick={handleCheck}>
+        <div className="col-12 col-md-4 d-flex align-items-end">
+          <button
+            className="btn btn-primary w-100 w-md-auto"
+            onClick={handleSearch}
+          >
             Check
           </button>
         </div>
@@ -103,56 +64,92 @@ export default function VehicleCheckTab() {
       </div>
 
       {/* ERROR */}
-      {error && <div className="text-danger small mb-2">{error}</div>}
+      {error && <div className="text-danger mb-2">{error}</div>}
 
       {/* RESULT */}
-      {data && (
+      {customer && (
         <div className="card p-3 mt-3">
 
-          <p><b>Name:</b> {data.name}</p>
-          <p><b>Mobile:</b> {data.mobile}</p>
+          <h6 className="mb-3">Customer Details</h6>
+
+          <div className="row">
+
+            <div className="col-12 col-md-6 mb-2">
+              <label>Mobile</label>
+              <input className="form-control" value={customer.mobile} disabled />
+            </div>
+
+            <div className="col-12 col-md-6 mb-2">
+              <label>Name</label>
+              <input className="form-control" value={customer.name || ""} disabled />
+            </div>
+
+            <div className="col-12 col-md-6 mb-2">
+              <label>Email</label>
+              <input className="form-control" value={customer.email || ""} disabled />
+            </div>
+
+            <div className="col-12 col-md-6 mb-2">
+              <label>Address</label>
+              <input className="form-control" value={customer.address || ""} disabled />
+            </div>
+
+          </div>
 
           {/* VEHICLES */}
-          {data.vehicles && (
-            <p>
-              <b>Vehicles:</b> {data.vehicles.join(", ")}
-            </p>
+          <hr />
+          <h6>Vehicles</h6>
+
+          {customer.vehicles?.length === 0 && (
+            <p className="text-muted">No vehicles</p>
           )}
 
-          {/* ADD VEHICLE (only if not found) */}
-          {data.vehicle_not_found && (
-            <div className="mt-3">
-
-              <div className="row">
-
-                <div className="col-md-6 mb-2">
-                  <label>Vehicle Type *</label>
-                  <select
-                    className="form-control"
-                    value={vehicleType}
-                    onChange={(e) => setVehicleType(e.target.value)}
-                  >
-                    <option value="">Select</option>
-                    <option>Two Wheeler</option>
-                    <option>Three Wheeler</option>
-                    <option>Four Wheeler</option>
-                    <option>Heavy Vehicle</option>
-                  </select>
-                </div>
-
-                <div className="col-md-6 d-flex align-items-end mb-2">
-                  <button
-                    className="btn btn-primary px-4"
-                    onClick={handleAddVehicle}
-                  >
-                    Add Vehicle
-                  </button>
-                </div>
-
-              </div>
-
+          {customer.vehicles?.map((v: any) => (
+            <div
+              key={v.id}
+              className="d-flex flex-column flex-md-row gap-2 mb-2"
+            >
+              <input
+                className="form-control"
+                value={v.number}
+                disabled
+              />
+              <input
+                className="form-control"
+                value={vehicleTypeMap[v.type] || "Unknown"}
+                disabled
+              />
             </div>
+          ))}
+
+          {/* ALTERNATE MOBILES */}
+          <hr />
+          <h6>Alternate Mobiles</h6>
+
+          {(!customer.alternate_mobiles || customer.alternate_mobiles.length === 0) && (
+            <p className="text-muted">No alternate numbers</p>
           )}
+
+          {customer.alternate_mobiles?.map((alt: any) => (
+            <div
+              key={alt.id}
+              className="d-flex flex-column flex-md-row gap-2 mb-2 align-items-md-center"
+            >
+              <input
+                className="form-control"
+                value={alt.mobile}
+                disabled
+              />
+
+              <span
+                className={`badge ${
+                  alt.is_active ? "bg-success" : "bg-warning"
+                }`}
+              >
+                {alt.status}
+              </span>
+            </div>
+          ))}
 
         </div>
       )}

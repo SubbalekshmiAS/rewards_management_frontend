@@ -1,3 +1,6 @@
+* {
+  box-sizing: border-box;
+}
 .small-input {
     font-size: 14px;
 }
@@ -105,4 +108,78 @@
   .error-box {
     height: auto;
   }
+}
+
+/* reward */
+/* TABLE STYLE */
+.premium-table table {
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.premium-table thead th {
+  border: none;
+  color: #0d6efd;
+  font-weight: 600;
+}
+
+.premium-table tbody tr {
+  background: #fff;
+  transition: 0.2s;
+}
+
+.premium-table tbody tr:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.premium-table td {
+  border: none;
+  padding: 12px;
+}
+
+/* TODAY HIGHLIGHT */
+.today-row {
+  border-left: 4px solid #0d6efd;
+  background: #f8fbff;
+}
+
+/* POINTS */
+.points-pill {
+  background: #0d6efd;
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* MOBILE CARD */
+.reward-card {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 10px;
+  background: #fff;
+}
+
+/* PAGINATION */
+.pagination-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pagination-box button {
+  border: none;
+  background: #0d6efd;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 6px;
+}
+
+.pagination-box button:disabled {
+  background: #ccc;
+}
+
+.card {
+  overflow: hidden;
 }

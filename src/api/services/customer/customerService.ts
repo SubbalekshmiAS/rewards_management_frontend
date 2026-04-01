@@ -162,3 +162,25 @@ export const sendAltOtpApi = async (mobile: string, type: string, phone: string,
 console.log(res);
   return res.data;
 };
+
+export const verifyPrimaryOtpApi = async (data: {
+  mobile: string;
+  otp: string;
+}) => {
+  const res = await API.post("/customers/verify-primary-otp", data);
+  return res.data;
+};
+
+export const verifyAlternateOtpApi = async (data: {
+  mobile: string;
+  otp: string;
+  customer_id: number;
+}) => {
+  const res = await API.post("/customers/verify-alternate-otp", data);
+  return res.data;
+};
+
+export const resendOtpApi = async (mobile: string) => {
+  const res = await API.post("/resend-otp", { mobile });
+  return res.data;
+};

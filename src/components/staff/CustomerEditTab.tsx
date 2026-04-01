@@ -2,8 +2,12 @@ import { useState } from "react";
 import {
   searchCustomer,
   requestCustomerUpdate,
-  sendAltOtpApi
+  sendAltOtpApi,
+  verifyPrimaryOtpApi,
+  verifyAlternateOtpApi,
+  resendOtpApi
 } from "../../api/services/customer/customerService";
+import "../../styles/staff/CustomerEditTab.css";
 import type { Customer, Vehicle, AlternateMobile } from "../../types/customer";
 import { vehicleTypeOptions, vehicleTypeMap } from "../../constants/vehicleTypes";
 
@@ -48,6 +52,8 @@ export default function CustomerEditTab() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [successMsg, setSuccessMsg] = useState("");
+  const [selectedAlt, setSelectedAlt] = useState<AlternateMobile | null>(null);
+  const [otpStep, setOtpStep] = useState<"primary" | "alternate">("primary");
 
   // SEARCH
   const handleSearch = async () => {
@@ -320,7 +326,7 @@ export default function CustomerEditTab() {
     setNewVehicle({ number: "", type: "" });
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     let newErrors: any = {};
 
     if (!otpValue) {
@@ -332,15 +338,43 @@ export default function CustomerEditTab() {
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
 
-    const updated = [...alternateMobiles];
-    updated[otpAltIndex!].verified = true;
+    try {
+      if (otpStep === "primary") {
 
-    setAlternateMobiles(updated);
-    setShowOtpModal(false);
-    setOtpValue("");
-    setErrors({});
+        await verifyPrimaryOtpApi({
+          mobile: form.mobile,
+          otp: otpValue,
+          alternate_mobile: alternateMobiles[otpAltIndex!].mobile
+        });
+
+        setOtpStep("alternate");
+        setOtpValue("");
+        setErrors({});
+
+      } else {
+
+        await verifyAlternateOtpApi({
+          mobile: alternateMobiles[otpAltIndex!].mobile,
+          otp: otpValue,
+          customer_id: customer.customer_id
+        });
+
+        const updated = [...alternateMobiles];
+        updated[otpAltIndex!].verified = true;
+        setAlternateMobiles(updated);
+
+        setShowOtpModal(false);
+        setOtpStep("primary");
+        setOtpValue("");
+
+      }
+
+    } catch (err: any) {
+      setErrors({
+        otp: err?.response?.data?.message || "OTP failed"
+      });
+    }
   };
-
   const handleUpdate = () => {
     let newErrors: any = {};
 
@@ -376,7 +410,7 @@ export default function CustomerEditTab() {
         </div>
 
         <div className="col-md-4 d-flex align-items-end">
-          <button className="btn btn-primary px-4" onClick={handleSearch}>
+          <button className="btn btn-primary btn-sm w-100 w-md-auto" onClick={handleSearch}>
             Search
           </button>
         </div>
@@ -503,7 +537,7 @@ export default function CustomerEditTab() {
     //console.log(customer);
     // BACKEND CHECK
     console.log(customer.mobile);
-    await sendAltOtpApi(currentAlt.mobile,"alternate",customer.mobile,customer.customer_id);
+    await sendAltOtpApi(currentAlt.mobile,"primary_verification",customer.mobile,customer.customer_id);
 
     // IF SUCCESS → SEND OTP
     arr[i].otpSent = true;
@@ -630,7 +664,7 @@ export default function CustomerEditTab() {
           ))}
 
           {/* ADD VEHICLE */}
-          <div className="d-flex mt-2">
+          <div className="vehicle-row d-flex flex-wrap mt-2">
             <input
               className="form-control me-2"
               placeholder="Vehicle Number"
@@ -641,7 +675,7 @@ export default function CustomerEditTab() {
             />
 
             <select
-              className="form-control me-2"
+              className="form-control me-2 mt-2 gap-2"
               value={newVehicle.type}
               onChange={(e) =>
                 setNewVehicle({ ...newVehicle, type: Number(e.target.value) })
@@ -656,7 +690,7 @@ export default function CustomerEditTab() {
               ))}
             </select>
 
-            <button className="btn btn-primary btn-sm" onClick={handleAddVehicle}>
+            <button className="btn btn-primary btn-sm gap-2 mt-2" onClick={handleAddVehicle}>
               Add
             </button>
           </div>
@@ -783,7 +817,7 @@ export default function CustomerEditTab() {
 
               {/* HEADER */}
               <div className="otp-header">
-                Verify Alternate Number
+                {otpStep === "primary" ? "Verify Registered Number" : "Verify Alternate Number"}
               </div>
 
               {/* BODY */}
@@ -804,7 +838,9 @@ export default function CustomerEditTab() {
                 </div>
 
                 <p className="text-muted small mb-3">
-                  An OTP has been sent to the registered number for verification.
+                  {otpStep === "primary"
+                    ? "Enter OTP sent to registered number"
+                    : "Enter OTP sent to alternate number"}
                 </p>
 
                 {/* INPUT */}
@@ -827,7 +863,17 @@ export default function CustomerEditTab() {
 
                   <button
                     className="btn btn-outline-primary btn-sm"
-                    onClick={() => console.log("resend")}
+                    onClick={async () => {
+                      try {
+                        if (otpStep === "primary") {
+                          await resendOtpApi(form.mobile);
+                        } else {
+                          await resendOtpApi(alternateMobiles[otpAltIndex!].mobile);
+                        }
+                      } catch {
+                        alert("Failed to resend OTP");
+                      }
+                    }}
                   >
                     Resend OTP
                   </button>

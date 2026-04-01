@@ -11,29 +11,47 @@ const DashboardContent: React.FC = () => (
     </div>
 
     {/*  Staff Details Table */}
-    <div className="bg-white rounded shadow p-4">
-      <h2 className="font-bold mb-4">Staff Details</h2>
-      <table className="w-full table-auto">
-        <thead>
-          <tr className="text-left border-b">
-            <th className="px-2 py-1">Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[
-            { name: "John Doe", course: "UI/UX Design", status: "Enrolled", enrolled: "12/04/2023" },
-            { name: "Jane Smith", course: "Full Stack Dev", status: "Enrolled", enrolled: "15/04/2023" },
-            { name: "Arun", course: "Front-End", status: "Unenrolled", enrolled: "20/04/2023" },
-          ].map((student) => (
-            <tr key={student.name} className="border-b">
-              <td className="px-2 py-1">{student.name}</td>
-              <td className="px-2 py-1">{student.course}</td>
-              <td className="px-2 py-1">{student.status}</td>
-              <td className="px-2 py-1">{student.enrolled}</td>
+    <div className="card p-3">
+
+      <h5 className="mb-3">Staff Details</h5>
+
+      <div className="table-responsive">
+        <table className="table table-bordered">
+
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Course</th>
+              <th>Status</th>
+              <th>Date</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>John Doe</td>
+              <td>UI/UX Design</td>
+              <td>Enrolled</td>
+              <td>12/04/2023</td>
+            </tr>
+
+            <tr>
+              <td>Jane Smith</td>
+              <td>Full Stack Dev</td>
+              <td>Enrolled</td>
+              <td>15/04/2023</td>
+            </tr>
+
+            <tr>
+              <td>Arun</td>
+              <td>Front-End</td>
+              <td>Unenrolled</td>
+              <td>20/04/2023</td>
+            </tr>
+          </tbody>
+
+        </table>
+      </div>
     </div>
   </div>
 );

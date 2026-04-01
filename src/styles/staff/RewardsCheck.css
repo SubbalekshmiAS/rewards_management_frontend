@@ -1,0 +1,102 @@
+.total-points-box {
+  text-align: right;
+}
+
+.points-label {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+.points-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: #198754;
+}
+
+.points-pill {
+  background: #e7f7ee;
+  color: #198754;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.reward-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.tab-container {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.tab-item {
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+
+.active-tab {
+  color: #0d6efd;
+  border-bottom: 2px solid #0d6efd;
+  font-weight: 600;
+}
+
+.inactive-tab {
+  color: #6c757d;
+}
+
+.page-heading {
+  font-weight: 600;
+}
+
+/* MOBILE FIX */
+@media (max-width: 768px) {
+  .tab-container {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .tab-item {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}
+
+/* TOP ROW */
+.reward-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* VEHICLE NUMBER FIX */
+.vehicle-number span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* POINT BADGE */
+.points-pill {
+  background: #e7f7ee;
+  color: #198754;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* BOTTOM TEXT */
+.reward-bottom {
+  font-size: 12px;
+  color: #6c757d;
+  margin-top: 4px;
+}

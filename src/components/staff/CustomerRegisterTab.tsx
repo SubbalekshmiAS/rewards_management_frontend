@@ -269,9 +269,9 @@ export default function CustomerRegisterTab() {
       <h6 className="mb-3">Vehicles *</h6>
 
       {vehicles.map((v, i) => (
-        <div className="row mb-2" key={i}>
+        <div className="vehicle-card mb-3" key={i}>
 
-          <div className="col-md-5">
+          <div className="mb-2">
             <input
               className={`form-control ${errors[`vehicle_number_${i}`] ? "is-invalid" : ""}`}
               placeholder="Vehicle Number *"
@@ -287,7 +287,7 @@ export default function CustomerRegisterTab() {
             )}
           </div>
 
-          <div className="col-md-5">
+          <div className="mb-2">
             <select
               className={`form-control ${errors[`vehicle_type_${i}`] ? "is-invalid" : ""}`}
               value={v.vehicle_type_id}
@@ -310,14 +310,12 @@ export default function CustomerRegisterTab() {
             )}
           </div>
 
-          <div className="col-md-2 d-flex align-items-start">
-            <button
-              className="btn btn-outline-danger btn-sm"
-              onClick={() => removeVehicleRow(i)}
-            >
-              Remove
-            </button>
-          </div>
+          <button
+            className="btn btn-outline-danger btn-sm"
+            onClick={() => removeVehicleRow(i)}
+          >
+            Remove
+          </button>
 
         </div>
       ))}
@@ -331,7 +329,7 @@ export default function CustomerRegisterTab() {
         </button>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 d-grid">
         <button
           className="btn btn-primary px-4"
           onClick={handleSubmit}
@@ -344,7 +342,7 @@ export default function CustomerRegisterTab() {
       {/* OTP MODAL */}
       {showOtpModal && (
         <div className="modal d-block" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog">
+          <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-3">
 
               <h6>Enter OTP</h6>

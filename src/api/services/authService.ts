@@ -11,7 +11,7 @@ export const loginService = async (email: string, password: string) => {
 
     return {
       success: true,
-      data: response.data
+      data: response
     };
 
   } catch (error: any) {
