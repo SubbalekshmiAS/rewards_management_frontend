@@ -1,0 +1,105 @@
+/* MOBILE FIRST FIX */
+@media (max-width: 768px) {
+
+  /* reduce padding */
+  .card {
+    padding: 15px !important;
+  }
+
+  /* STACK ROWS */
+  .row {
+    flex-direction: column !important;
+  }
+
+  /* FULL WIDTH INPUTS */
+  .row .col-md-6,
+  .row .col-md-4,
+  .row .col-md-8 {
+    width: 100% !important;
+  }
+
+  /* SEARCH BUTTON FULL WIDTH */
+  .row .btn {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  /* VEHICLE SECTION STACK */
+  .d-flex {
+    flex-direction: column !important;
+  }
+
+  .d-flex .form-control,
+  .d-flex select,
+  .d-flex button {
+    width: 100% !important;
+    margin-bottom: 8px;
+  }
+
+  /* ALT MOBILE BLOCK */
+  .alt-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #eee;
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .alt-col {
+    width: 100%;
+  }
+
+  .alt-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .alt-actions button {
+    width: 100%;
+  }
+
+  /* OTP MODAL */
+  .otp-modal .modal-dialog {
+    margin: 10px;
+  }
+
+  .otp-body {
+    padding: 15px;
+  }
+
+  .otp-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .otp-actions button {
+    width: 100%;
+  }
+
+  /* TEXT SIZE */
+  h5 {
+    font-size: 1.2rem;
+  }
+
+  h6 {
+    font-size: 1rem;
+  }
+
+  .vehicle-row {
+  gap: 8px;
+}
+
+@media (max-width: 768px) {
+  .vehicle-row {
+    flex-direction: column;
+  }
+  
+  .modal-dialog {
+    margin: 10px;
+  }
+}
+
+
+}

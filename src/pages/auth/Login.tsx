@@ -33,6 +33,7 @@ export default function Login() {
       setErrors(result.errors);
       return;
     }
+    console.log(result);
 
     // save token
     localStorage.setItem("token", result.data.token);

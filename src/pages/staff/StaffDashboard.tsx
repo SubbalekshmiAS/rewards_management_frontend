@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../../styles/staff/StaffDashboard.css'; // separate CSS
+import '../../styles/staff/StaffDashboard.css';
+
 import {
   FaTachometerAlt,
   FaUserPlus,
@@ -31,12 +32,14 @@ type MenuKey =
   | 'nonLoyalty'
   | 'logout';
 
-const STAFF_BLUE = '#4e73df';
-
 const StaffDashboard: React.FC = () => {
-  const [activeMenu, setActiveMenu] = useState<MenuKey>('dashboard');
 
-  const menuItems: { key: MenuKey; label: string; icon: JSX.Element }[] = [
+ const [activeMenu, setActiveMenu] = useState<MenuKey>('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false); // ✅ correct place
+
+  const navigate = useNavigate();
+
+  const menuItems = [
     { key: 'dashboard', label: 'Dashboard', icon: <FaTachometerAlt /> },
     { key: 'customer', label: 'Customer Registration', icon: <FaUserPlus /> },
     { key: 'rewardsCheck', label: 'Rewards Check', icon: <FaGift /> },
@@ -47,6 +50,12 @@ const StaffDashboard: React.FC = () => {
     { key: 'logout', label: 'Log Out', icon: <FaSignOutAlt /> },
   ];
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
   const renderContent = () => {
     switch (activeMenu) {
       case 'dashboard': return <DashboardContent />;
@@ -56,23 +65,25 @@ const StaffDashboard: React.FC = () => {
       case 'shiftActive': return <ShiftActiveContent />;
       case 'rewardsRedemption': return <RewardsRedemptionContent />;
       case 'nonLoyalty': return <NonLoyaltyContent />;
-      //case 'logout': return <div>Logging out...</div>;
       default: return <div>Select a menu</div>;
     }
   };
 
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
   return (
-    <div className="staff-dashboard d-flex">
-      <div className="sidebar">
+    <div className="staff-dashboard">
+
+      {/* OVERLAY (mobile) */}
+      {sidebarOpen && (
+        <div
+          className="overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* SIDEBAR */}
+      <div className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         <h3 className="sidebar-title">Staff Panel</h3>
+
         <ul className="nav flex-column">
           {menuItems.map((item) => (
             <li key={item.key} className="nav-item mb-2">
@@ -82,12 +93,12 @@ const StaffDashboard: React.FC = () => {
                     handleLogout();
                   } else {
                     setActiveMenu(item.key);
+                    setSidebarOpen(false); // ✅ auto close on mobile
                   }
                 }}
-                className={`nav-btn d-flex align-items-center w-100 text-start ${activeMenu === item.key ? 'active' : ''
-                  }`}
+                className={`nav-btn ${activeMenu === item.key ? 'active' : ''}`}
               >
-                <span className="me-2">{item.icon}</span>
+                <span>{item.icon}</span>
                 {item.label}
               </button>
             </li>
@@ -95,9 +106,20 @@ const StaffDashboard: React.FC = () => {
         </ul>
       </div>
 
-      <div className="content flex-grow-1 p-4 overflow-auto">
+      {/* CONTENT */}
+      <div className="content">
+
+        {/* MOBILE MENU BUTTON */}
+        <button
+          className="btn btn-primary d-md-none mb-3"
+          onClick={() => setSidebarOpen(true)}
+        >
+          ☰ Menu
+        </button>
+
         {renderContent()}
       </div>
+
     </div>
   );
 };

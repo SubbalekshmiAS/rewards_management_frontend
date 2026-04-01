@@ -1,0 +1,31 @@
+@media (max-width: 768px) {
+
+  .card {
+    padding: 15px !important;
+  }
+
+  .row {
+    flex-direction: column;
+  }
+
+  .col-md-8,
+  .col-md-4,
+  .col-md-6 {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
+
+  /* add in css */
+.tab-scroll {
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.tab-scroll::-webkit-scrollbar {
+  display: none;
+}
+}

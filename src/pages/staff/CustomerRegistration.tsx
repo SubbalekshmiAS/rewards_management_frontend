@@ -4,15 +4,17 @@ import { FaCar, FaUserPlus, FaEdit } from "react-icons/fa";
 import VehicleCheckTab from "../../components/staff/VehicleCheckTab";
 import CustomerRegisterTab from "../../components/staff/CustomerRegisterTab";
 import CustomerEditTab from "../../components/staff/CustomerEditTab";
+import '../../styles/staff/CustomerRegistration.css';
 
 export default function CustomerRegistration() {
   const [activeTab, setActiveTab] = useState<"check" | "register" | "edit">("check");
 
   // reusable tab style (clean)
   const tabClass = (tab: string) =>
-    `me-4 pb-2 d-flex align-items-center ${activeTab === tab
-      ? "border-bottom border-primary fw-bold text-primary"
-      : "text-muted"
+    `tab-item d-flex align-items-center ${
+      activeTab === tab
+        ? "active-tab"
+        : "inactive-tab"
     }`;
 
   return (
@@ -22,7 +24,7 @@ export default function CustomerRegistration() {
         <h5 className="mb-4 page-heading">Customer Management</h5>
 
         {/* Tabs */}
-        <div className="d-flex border-bottom mb-4">
+        <div className="tab-container border-bottom mb-4">
 
           {/* Vehicle Check */}
           <div
