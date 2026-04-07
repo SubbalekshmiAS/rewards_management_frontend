@@ -1,0 +1,16 @@
+.summary-box {
+  background: #f8f9fa;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.summary-box h6 {
+  margin: 0;
+  font-weight: 600;
+}
+
+.last-activity {
+  background: #fff3cd;
+  padding: 10px;
+  border-radius: 8px;
+}
