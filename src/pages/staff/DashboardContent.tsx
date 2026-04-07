@@ -1,59 +1,96 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import { getStaffDashboard } from "../../api/services/dashboard/dashboardService";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 
-const DashboardContent: React.FC = () => (
-  <div className="space-y-6">
-    {/* Summary Cards */}
-    <div className="grid grid-cols-2 gap-4">
-      <div className="p-4 bg-white rounded shadow">Total Users: 2201</div>
-      <div className="p-4 bg-white rounded shadow">Total Staff: 1901</div>
-      <div className="p-4 bg-white rounded shadow">New Students: 1001</div>
-      <div className="p-4 bg-white rounded shadow">Trained Students: 881</div>
-    </div>
+export default function DashboardContent() {
 
-    {/*  Staff Details Table */}
-    <div className="card p-3">
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const COLORS = ["#facc15", "#6b7280"];
 
-      <h5 className="mb-3">Staff Details</h5>
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      const res = await getStaffDashboard();
+      setData(res);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      <div className="table-responsive">
-        <table className="table table-bordered">
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Course</th>
-              <th>Status</th>
-              <th>Date</th>
-            </tr>
-          </thead>
+  if (loading) return <p>Loading...</p>;
 
-          <tbody>
-            <tr>
-              <td>John Doe</td>
-              <td>UI/UX Design</td>
-              <td>Enrolled</td>
-              <td>12/04/2023</td>
-            </tr>
+  const chartData = [
+    { name: "Petrol", value: data?.fuel_stats?.petrol || 0 },
+    { name: "Diesel", value: data?.fuel_stats?.diesel || 0 },
+  ];
 
-            <tr>
-              <td>Jane Smith</td>
-              <td>Full Stack Dev</td>
-              <td>Enrolled</td>
-              <td>15/04/2023</td>
-            </tr>
+  return (
+    <div className="p-3">
 
-            <tr>
-              <td>Arun</td>
-              <td>Front-End</td>
-              <td>Unenrolled</td>
-              <td>20/04/2023</td>
-            </tr>
-          </tbody>
+      {/* 🔥 SUMMARY */}
+      <div className="row g-2 mb-3">
 
-        </table>
+        <div className="col-6">
+          <div className="card p-3 text-center">
+            <small>Today Points</small>
+            <h5>{data?.today_points || 0}</h5>
+          </div>
+        </div>
+
+        <div className="col-6">
+          <div className="card p-3 text-center">
+            <small>Redeemed</small>
+            <h5>{data?.today_redeemed || 0}</h5>
+          </div>
+        </div>
+
+        <div className="col-6">
+          <div className="card p-3 text-center">
+            <small>Non Loyalty</small>
+            <h5>{data?.non_loyalty_points || 0}</h5>
+          </div>
+        </div>
+
+        <div className="col-6">
+          <div className="card p-3 text-center">
+            <small>Shift Status</small>
+            <h5 className={data?.shift_active ? "text-success" : "text-danger"}>
+              {data?.shift_active ? "Active" : "Inactive"}
+            </h5>
+          </div>
+        </div>
+
       </div>
-    </div>
-  </div>
-);
 
-export default DashboardContent;
+      {/* 📊 PIE CHART */}
+      <div className="card p-3 mb-3">
+        <h6 className="mb-3">Fuel Distribution</h6>
+
+        <ResponsiveContainer width="100%" height={250}>
+          <PieChart>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={80}
+              label
+            >
+              {chartData.map((entry, index) => (
+    <Cell key={index} fill={COLORS[index]} />
+  ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+
+    </div>
+  );
+}

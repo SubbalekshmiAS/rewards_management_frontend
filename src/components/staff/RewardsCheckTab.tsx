@@ -128,7 +128,7 @@ export default function RewardsCheckTab() {
 
                   <td>
                     <span className="points-pill">
-                      {item.total_points}
+                      {item.available_points}
                     </span>
                   </td>
 
